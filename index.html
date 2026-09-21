@@ -354,6 +354,13 @@
         }
     });
 
+    // Fungsi Pembantu untuk Format Waktu Server Firebase
+    function formatTimestamp(ts) {
+        if (!ts) return '-';
+        let dateObj = ts.toDate ? ts.toDate() : new Date(ts);
+        return dateObj.toLocaleTimeString();
+    }
+
     function toggleRoleInput() {
         const role = document.getElementById('roleSelect').value;
         document.getElementById('pegawaiNameGroup').style.display = (role === 'pegawai') ? 'block' : 'none';
@@ -544,7 +551,7 @@
         document.getElementById('photoPreviewArea').style.display = 'block';
     }
 
-    // --- REKAM ABSENSI (PEGAWAI) ---
+    // --- REKAM ABSENSI (PEGAWAI) - MENGGUNAKAN SERVER TIMESTAMP ---
     function recordAttendance(type) {
         const msg = document.getElementById('attendanceMsg');
 
@@ -563,7 +570,6 @@
         }
 
         const todayStr = new Date().toISOString().split('T')[0];
-        const timeStr = new Date().toLocaleTimeString();
         const docId = `${currentUserData.schoolId}_${currentUserData.uid}_${todayStr}`;
 
         const attendanceData = {
@@ -574,19 +580,19 @@
             lat: userCurrentLat,
             lng: userCurrentLng,
             selfie: currentSelfieBase64,
-            status: 'Hadir' // Menandakan kehadiran normal
+            status: 'Hadir'
         };
 
         if (type === 'Masuk') {
-            attendanceData.timeIn = timeStr;
+            attendanceData.timeInServer = firebase.firestore.FieldValue.serverTimestamp();
         } else {
-            attendanceData.timeOut = timeStr;
+            attendanceData.timeOutServer = firebase.firestore.FieldValue.serverTimestamp();
         }
 
         db.collection("fap_attendance").doc(docId).set(attendanceData, { merge: true })
             .then(() => {
                 msg.style.color = '#10b981';
-                msg.innerText = `✅ Berhasil Absen ${type} pada pukul ${timeStr}`;
+                msg.innerText = `✅ Berhasil Absen ${type}! Waktu tercatat di server Google.`;
                 loadMyHistory();
             })
             .catch(err => {
@@ -598,7 +604,7 @@
     // --- REKAM IZIN / SAKIT (PEGAWAI) ---
     function recordPermission() {
         const msg = document.getElementById('attendanceMsg');
-        const statusType = document.getElementById('statusIzinSakit').value; // 'Izin' atau 'Sakit'
+        const statusType = document.getElementById('statusIzinSakit').value; 
         const alasan = document.getElementById('alasanKeterangan').value.trim();
 
         if (!alasan) {
@@ -608,7 +614,6 @@
         }
 
         const todayStr = new Date().toISOString().split('T')[0];
-        const timeStr = new Date().toLocaleTimeString();
         const docId = `${currentUserData.schoolId}_${currentUserData.uid}_${todayStr}`;
 
         const permissionData = {
@@ -616,11 +621,11 @@
             uid: currentUserData.uid,
             name: currentUserData.name,
             date: todayStr,
-            status: statusType, // 'Izin' atau 'Sakit'
+            status: statusType, 
             reason: alasan,
             timeIn: '-',
             timeOut: '-',
-            timeRecorded: timeStr
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
         };
 
         db.collection("fap_attendance").doc(docId).set(permissionData, { merge: true })
@@ -651,7 +656,9 @@
                     if (statusLabel === 'Izin' || statusLabel === 'Sakit') {
                         detailInfo = `<span style="color: #d97706; font-weight: bold;">Status: ${statusLabel}</span><br><span style="color: #64748b;">Alasan: ${d.reason || '-'}</span>`;
                     } else {
-                        detailInfo = `<span style="color: #10b981;">Masuk: ${d.timeIn || '-'}</span> | <span style="color: #ef4444;">Pulang: ${d.timeOut || '-'}</span>`;
+                        let tIn = formatTimestamp(d.timeInServer || d.timeIn);
+                        let tOut = formatTimestamp(d.timeOutServer || d.timeOut);
+                        detailInfo = `<span style="color: #10b981;">Masuk: ${tIn}</span> | <span style="color: #ef4444;">Pulang: ${tOut}</span>`;
                     }
 
                     html += `
@@ -706,7 +713,9 @@
                     if (statusLabel === 'Izin' || statusLabel === 'Sakit') {
                         detailInfo = `<span style="color: #d97706; font-weight: bold;">Status: ${statusLabel}</span><br><span style="color: #64748b;">Alasan: ${d.reason || '-'}</span>`;
                     } else {
-                        detailInfo = `<span style="color: #10b981;">Masuk: ${d.timeIn || '-'}</span> | <span style="color: #ef4444;">Pulang: ${d.timeOut || '-'}</span><br><span style="font-size: 11px; color: #64748b;">GPS: ${d.lat?.toFixed(4)}, ${d.lng?.toFixed(4)}</span>`;
+                        let tIn = formatTimestamp(d.timeInServer || d.timeIn);
+                        let tOut = formatTimestamp(d.timeOutServer || d.timeOut);
+                        detailInfo = `<span style="color: #10b981;">Masuk: ${tIn}</span> | <span style="color: #ef4444;">Pulang: ${tOut}</span><br><span style="font-size: 11px; color: #64748b;">GPS: ${d.lat?.toFixed(4)}, ${d.lng?.toFixed(4)}</span>`;
                     }
 
                     html += `
@@ -751,13 +760,15 @@
                 let index = 1;
                 querySnapshot.forEach((doc) => {
                     let d = doc.data();
+                    let tIn = formatTimestamp(d.timeInServer || d.timeIn);
+                    let tOut = formatTimestamp(d.timeOutServer || d.timeOut);
                     rows.push([
                         index++, 
                         d.date, 
                         d.name, 
                         d.status || 'Hadir',
-                        d.timeIn || '-', 
-                        d.timeOut || '-', 
+                        tIn, 
+                        tOut, 
                         d.reason || '-',
                         `${d.lat || '-'}, ${d.lng || '-'}`
                     ]);
