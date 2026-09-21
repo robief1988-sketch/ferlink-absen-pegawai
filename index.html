@@ -240,10 +240,27 @@
 
             <div class="card">
                 <div class="card-title">⏱️ Rekam Presensi Harian</div>
-                <div style="display: flex; gap: 10px;">
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                     <button class="btn btn-success" style="flex: 1; padding: 14px;" onclick="recordAttendance('Masuk')">📥 Absen Masuk</button>
                     <button class="btn btn-danger" style="flex: 1; padding: 14px;" onclick="recordAttendance('Pulang')">📤 Absen Pulang</button>
                 </div>
+
+                <!-- Bagian Pengajuan Izin / Sakit -->
+                <div style="border-top: 1px dashed #cbd5e1; padding-top: 14px;">
+                    <div class="form-group">
+                        <label>Atau Ajukan Keterangan Tidak Masuk:</label>
+                        <select id="statusIzinSakit" style="margin-bottom: 8px;">
+                            <option value="Izin">Izin</option>
+                            <option value="Sakit">Sakit</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tuliskan Alasan / Keterangan:</label>
+                        <input type="text" id="alasanKeterangan" placeholder="Contoh: Mengurus keperluan keluarga / Demam berobat">
+                    </div>
+                    <button class="btn btn-outline" style="width: 100%; border-color: #f59e0b; color: #d97706;" onclick="recordPermission()">📝 Kirim Pengajuan Izin/Sakit</button>
+                </div>
+
                 <div id="attendanceMsg" style="margin-top: 12px; font-size: 13px; font-weight: bold; text-align: center;"></div>
             </div>
 
@@ -427,7 +444,6 @@
         document.getElementById('headerUserRole').innerText = `${currentUserData.name} (${currentUserData.role.toUpperCase()})`;
         document.getElementById('headerBrandTitle').innerText = `🏢 FAP - ${currentUserData.schoolId.toUpperCase()}`;
         
-        // Ambil konfigurasi spesifik berdasarkan schoolId di koleksi fap_config
         db.collection("fap_config").doc(currentUserData.schoolId).get().then((doc) => {
             if (doc.exists) {
                 companySettings = doc.data();
@@ -528,7 +544,7 @@
         document.getElementById('photoPreviewArea').style.display = 'block';
     }
 
-    // --- REKAM ABSENSI (PEGAWAI) DENGAN SCHOOL ID ---
+    // --- REKAM ABSENSI (PEGAWAI) ---
     function recordAttendance(type) {
         const msg = document.getElementById('attendanceMsg');
 
@@ -551,13 +567,14 @@
         const docId = `${currentUserData.schoolId}_${currentUserData.uid}_${todayStr}`;
 
         const attendanceData = {
-            schoolId: currentUserData.schoolId, // <-- Penting agar terisolasi per sekolah
+            schoolId: currentUserData.schoolId,
             uid: currentUserData.uid,
             name: currentUserData.name,
             date: todayStr,
             lat: userCurrentLat,
             lng: userCurrentLng,
-            selfie: currentSelfieBase64
+            selfie: currentSelfieBase64,
+            status: 'Hadir' // Menandakan kehadiran normal
         };
 
         if (type === 'Masuk') {
@@ -578,6 +595,47 @@
             });
     }
 
+    // --- REKAM IZIN / SAKIT (PEGAWAI) ---
+    function recordPermission() {
+        const msg = document.getElementById('attendanceMsg');
+        const statusType = document.getElementById('statusIzinSakit').value; // 'Izin' atau 'Sakit'
+        const alasan = document.getElementById('alasanKeterangan').value.trim();
+
+        if (!alasan) {
+            msg.style.color = '#ef4444';
+            msg.innerText = `❌ Mohon tuliskan alasan ${statusType.toLowerCase()} Anda!`;
+            return;
+        }
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        const timeStr = new Date().toLocaleTimeString();
+        const docId = `${currentUserData.schoolId}_${currentUserData.uid}_${todayStr}`;
+
+        const permissionData = {
+            schoolId: currentUserData.schoolId,
+            uid: currentUserData.uid,
+            name: currentUserData.name,
+            date: todayStr,
+            status: statusType, // 'Izin' atau 'Sakit'
+            reason: alasan,
+            timeIn: '-',
+            timeOut: '-',
+            timeRecorded: timeStr
+        };
+
+        db.collection("fap_attendance").doc(docId).set(permissionData, { merge: true })
+            .then(() => {
+                msg.style.color = '#10b981';
+                msg.innerText = `✅ Pengajuan ${statusType} berhasil dikirim.`;
+                document.getElementById('alasanKeterangan').value = '';
+                loadMyHistory();
+            })
+            .catch(err => {
+                msg.style.color = '#ef4444';
+                msg.innerText = `❌ Gagal menyimpan: ${err.message}`;
+            });
+    }
+
     function loadMyHistory() {
         db.collection("fap_attendance")
             .where("schoolId", "==", currentUserData.schoolId)
@@ -587,12 +645,20 @@
                 let html = '';
                 querySnapshot.forEach((doc) => {
                     let d = doc.data();
+                    let statusLabel = d.status || 'Hadir';
+                    let detailInfo = '';
+
+                    if (statusLabel === 'Izin' || statusLabel === 'Sakit') {
+                        detailInfo = `<span style="color: #d97706; font-weight: bold;">Status: ${statusLabel}</span><br><span style="color: #64748b;">Alasan: ${d.reason || '-'}</span>`;
+                    } else {
+                        detailInfo = `<span style="color: #10b981;">Masuk: ${d.timeIn || '-'}</span> | <span style="color: #ef4444;">Pulang: ${d.timeOut || '-'}</span>`;
+                    }
+
                     html += `
                         <div class="log-item">
                             <div>
                                 <strong>📅 ${d.date}</strong><br>
-                                <span style="color: #10b981;">Masuk: ${d.timeIn || '-'}</span> | 
-                                <span style="color: #ef4444;">Pulang: ${d.timeOut || '-'}</span>
+                                ${detailInfo}
                             </div>
                             ${d.selfie ? `<img src="${d.selfie}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;" alt="Foto">` : ''}
                         </div>
@@ -610,7 +676,6 @@
             radius: parseInt(document.getElementById('cfgRadius').value)
         };
 
-        // Disimpan menggunakan doc ID berdasarkan schoolId masing-masing sekolah
         db.collection("fap_config").doc(currentUserData.schoolId).set(companySettings)
             .then(() => {
                 alert("✅ Pengaturan titik pusat sekolah berhasil disimpan!");
@@ -627,7 +692,7 @@
         }
 
         db.collection("fap_attendance")
-            .where("schoolId", "==", currentUserData.schoolId) // <-- Filter khusus sekolah yang login
+            .where("schoolId", "==", currentUserData.schoolId)
             .where("date", ">=", startDate)
             .where("date", "<=", endDate)
             .get()
@@ -635,6 +700,15 @@
                 let html = '';
                 querySnapshot.forEach((doc) => {
                     let d = doc.data();
+                    let statusLabel = d.status || 'Hadir';
+                    let detailInfo = '';
+
+                    if (statusLabel === 'Izin' || statusLabel === 'Sakit') {
+                        detailInfo = `<span style="color: #d97706; font-weight: bold;">Status: ${statusLabel}</span><br><span style="color: #64748b;">Alasan: ${d.reason || '-'}</span>`;
+                    } else {
+                        detailInfo = `<span style="color: #10b981;">Masuk: ${d.timeIn || '-'}</span> | <span style="color: #ef4444;">Pulang: ${d.timeOut || '-'}</span><br><span style="font-size: 11px; color: #64748b;">GPS: ${d.lat?.toFixed(4)}, ${d.lng?.toFixed(4)}</span>`;
+                    }
+
                     html += `
                         <div class="log-item">
                             <div style="display: flex; align-items: center; gap: 10px;">
@@ -642,9 +716,7 @@
                                 <div>
                                     <strong style="font-size: 14px; color: #1e293b;">${d.name}</strong><br>
                                     <span style="color: #64748b; font-weight: bold;">📅 ${d.date}</span><br>
-                                    <span style="color: #10b981;">Masuk: ${d.timeIn || '-'}</span> | 
-                                    <span style="color: #ef4444;">Pulang: ${d.timeOut || '-'}</span><br>
-                                    <span style="font-size: 11px; color: #64748b;">GPS: ${d.lat?.toFixed(4)}, ${d.lng?.toFixed(4)}</span>
+                                    ${detailInfo}
                                 </div>
                             </div>
                         </div>
@@ -670,10 +742,10 @@
             .get()
             .then((querySnapshot) => {
                 let rows = [
-                    [`LAPORAN REKAPITULASI ABSENSI - ${currentUserData.schoolId.toUpperCase()}`],
+                    [`LAPORAN REKAPITULASI ABSENSI & KETIDAKHADIRAN - ${currentUserData.schoolId.toUpperCase()}`],
                     ["Periode", `: ${startDate} s/d ${endDate}`],
                     [],
-                    ["No", "Tanggal", "Nama Pegawai", "Jam Masuk", "Jam Pulang", "Koordinat Lokasi GPS"]
+                    ["No", "Tanggal", "Nama Pegawai", "Status", "Jam Masuk", "Jam Pulang", "Alasan / Keterangan", "Koordinat Lokasi GPS"]
                 ];
 
                 let index = 1;
@@ -683,8 +755,10 @@
                         index++, 
                         d.date, 
                         d.name, 
+                        d.status || 'Hadir',
                         d.timeIn || '-', 
                         d.timeOut || '-', 
+                        d.reason || '-',
                         `${d.lat || '-'}, ${d.lng || '-'}`
                     ]);
                 });
