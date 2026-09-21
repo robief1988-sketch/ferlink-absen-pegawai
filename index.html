@@ -664,10 +664,12 @@
             });
     }
 
-    function loadMyHistory() {
+function loadMyHistory() {
         db.collection("fap_attendance")
             .where("schoolId", "==", currentUserData.schoolId)
             .where("uid", "==", currentUserData.uid)
+            .orderBy("date", "desc") // Urutkan dari tanggal terbaru
+            .limit(30)              // Batasi hanya 30 riwayat terakhir agar tidak berat
             .get()
             .then((querySnapshot) => {
                 let html = '';
@@ -695,6 +697,10 @@
                     `;
                 });
                 document.getElementById('myHistoryList').innerHTML = html || 'Belum ada riwayat absensi.';
+            })
+            .catch((err) => {
+                console.error("Gagal memuat riwayat:", err);
+                document.getElementById('myHistoryList').innerHTML = 'Gagal memuat riwayat atau indeks database sedang disiapkan.';
             });
     }
 
