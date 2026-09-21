@@ -289,27 +289,37 @@
                 <button class="btn btn-primary" onclick="saveCompanyConfig()">💾 Simpan Titik Sekolah</button>
             </div>
 
+            <!-- Panel Pantau Kehadiran Harian (Tampil di Layar dengan Foto & 1 Tanggal) -->
             <div class="card">
                 <div class="card-title">
-                    <span>📊 Pantau Kehadiran Seluruh Pegawai</span>
-                    <button class="btn btn-success" style="padding: 5px 10px; font-size: 11px;" onclick="exportExcelPimpinan()">📥 Download Excel</button>
+                    <span>📊 Pantau Kehadiran Pegawai</span>
                 </div>
                 
-                <div style="display: flex; gap: 10px;">
-                    <div class="form-group" style="flex: 1; margin-bottom: 10px;">
+                <div style="display: flex; gap: 10px; margin-bottom: 12px; align-items: flex-end;">
+                    <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                        <label>Pilih Tanggal Pantau:</label>
+                        <input type="date" id="viewDateInput" onchange="loadAttendanceByDate()">
+                    </div>
+                    <button class="btn btn-outline" style="padding: 11px 14px; font-size: 12px;" onclick="setTodayView()">📅 Hari Ini</button>
+                </div>
+
+                <div id="allAttendanceContainer">Memuat data pegawai...</div>
+            </div>
+
+            <!-- Panel Unduh Rekap (Khusus Download Excel dengan Rentang Tanggal) -->
+            <div class="card">
+                <div class="card-title">📥 Unduh Rekap Absensi (Excel)</div>
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <div class="form-group" style="flex: 1; margin-bottom: 0;">
                         <label>Dari Tanggal:</label>
                         <input type="date" id="filterStartDate">
                     </div>
-                    <div class="form-group" style="flex: 1; margin-bottom: 10px;">
+                    <div class="form-group" style="flex: 1; margin-bottom: 0;">
                         <label>Sampai Tanggal:</label>
                         <input type="date" id="filterEndDate">
                     </div>
                 </div>
-                <div style="margin-bottom: 15px;">
-                    <button class="btn btn-outline" style="width: 100%; font-size: 12px;" onclick="loadAllAttendancePimpinan()">🔍 Tampilkan Data Rentang Ini</button>
-                </div>
-
-                <div id="allAttendanceContainer">Memuat data pegawai...</div>
+                <button class="btn btn-success" style="width: 100%; font-size: 12px;" onclick="exportExcelPimpinan()">📥 Download File Excel</button>
             </div>
         </div>
 
@@ -342,9 +352,15 @@
     let companySettings = { lat: -6.200000, lng: 106.816666, radius: 100 };
 
     document.addEventListener("DOMContentLoaded", function() {
+        const todayStr = new Date().toISOString().split('T')[0];
+        
+        // Set input tanggal pantau ke hari ini
+        const viewDateInput = document.getElementById('viewDateInput');
+        if(viewDateInput) viewDateInput.value = todayStr;
+        
+        // Set input filter unduh Excel ke awal bulan s/d hari ini
         const today = new Date();
         const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-        
         const startInput = document.getElementById('filterStartDate');
         const endInput = document.getElementById('filterEndDate');
         
@@ -411,7 +427,7 @@
             });
     }
 
-    // Autentikasi: Login
+    // Autentikasi: Login (Pimpinan otomatis diset namanya tanpa harus isi input nama saat daftar/login)
     function loginUser() {
         const email = document.getElementById('authEmail').value.trim();
         const password = document.getElementById('authPassword').value;
@@ -462,10 +478,17 @@
                 loadMyHistory();
             } else {
                 document.getElementById('panelPimpinan').classList.add('active');
-                document.getElementById('cfgLat').value = companySettings.lat;
-                document.getElementById('cfgLng').value = companySettings.lng;
-                document.getElementById('cfgRadius').value = companySettings.radius;
-                loadAllAttendancePimpinan();
+                document.getElementById('cfgLat').value = companySettings.lat || -6.200000;
+                document.getElementById('cfgLng').value = companySettings.lng || 106.816666;
+                document.getElementById('cfgRadius').value = companySettings.radius || 100;
+                
+                // Pastikan input tanggal pantau terisi hari ini lalu muat datanya
+                const todayStr = new Date().toISOString().split('T')[0];
+                const viewInput = document.getElementById('viewDateInput');
+                if (viewInput) {
+                    viewInput.value = todayStr;
+                }
+                loadAttendanceByDate();
             }
         });
     }
@@ -689,19 +712,27 @@
             });
     }
 
-    function loadAllAttendancePimpinan() {
-        const startDate = document.getElementById('filterStartDate').value;
-        const endDate = document.getElementById('filterEndDate').value;
-
-        if (!startDate || !endDate) {
-            alert("Pilih rentang tanggal terlebih dahulu!");
-            return;
+    // Shortcut tombol "Hari Ini" untuk tampilan layar pimpinan
+    function setTodayView() {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const viewInput = document.getElementById('viewDateInput');
+        if (viewInput) {
+            viewInput.value = todayStr;
+            loadAttendanceByDate();
         }
+    }
+
+    // Menampilkan data absensi di layar sesuai tanggal tunggal yang dipilih (Lengkap dengan foto, jam masuk & pulang)
+    function loadAttendanceByDate() {
+        const viewDateInput = document.getElementById('viewDateInput');
+        if (!viewDateInput) return;
+        
+        const selectedDate = viewDateInput.value;
+        if (!selectedDate) return;
 
         db.collection("fap_attendance")
             .where("schoolId", "==", currentUserData.schoolId)
-            .where("date", ">=", startDate)
-            .where("date", "<=", endDate)
+            .where("date", "==", selectedDate)
             .get()
             .then((querySnapshot) => {
                 let html = '';
@@ -715,32 +746,44 @@
                     } else {
                         let tIn = formatTimestamp(d.timeInServer || d.timeIn);
                         let tOut = formatTimestamp(d.timeOutServer || d.timeOut);
-                        detailInfo = `<span style="color: #10b981;">Masuk: ${tIn}</span> | <span style="color: #ef4444;">Pulang: ${tOut}</span><br><span style="font-size: 11px; color: #64748b;">GPS: ${d.lat?.toFixed(4)}, ${d.lng?.toFixed(4)}</span>`;
+                        detailInfo = `<span style="color: #10b981;">Masuk: ${tIn}</span> | <span style="color: #ef4444;">Pulang: ${tOut}</span><br><span style="font-size: 11px; color: #64748b;">GPS: ${d.lat ? d.lat.toFixed(4) : '-'}, ${d.lng ? d.lng.toFixed(4) : '-'}</span>`;
                     }
+
+                    // Foto selfie tampil di layar sesuai tanggal yang dipilih
+                    let photoSrc = d.selfieUrl || d.selfie;
+                    let photoHtml = photoSrc ? `<img src="${photoSrc}" style="width:45px; height:45px; border-radius:50%; object-fit:cover; border: 1px solid #cbd5e1;" alt="Selfie">` : `<div style="width:45px; height:45px; border-radius:50%; background:#e2e8f0; display:flex; align-items:center; justify-content:center; font-size:10px; color:#64748b;">No Photo</div>`;
 
                     html += `
                         <div class="log-item">
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                ${d.selfie ? `<img src="${d.selfie}" style="width:45px; height:45px; border-radius:50%; object-fit:cover;" alt="Selfie">` : ''}
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                ${photoHtml}
                                 <div>
                                     <strong style="font-size: 14px; color: #1e293b;">${d.name}</strong><br>
-                                    <span style="color: #64748b; font-weight: bold;">📅 ${d.date}</span><br>
                                     ${detailInfo}
                                 </div>
                             </div>
+                            <span class="status-badge badge-ok" style="margin:0; padding: 4px 8px;">${statusLabel}</span>
                         </div>
                     `;
                 });
-                document.getElementById('allAttendanceContainer').innerHTML = html || 'Tidak ada data absensi pada rentang tanggal ini.';
+                
+                const container = document.getElementById('allAttendanceContainer');
+                if (container) {
+                    container.innerHTML = html || `Tidak ada data absensi pada tanggal ${selectedDate}.`;
+                }
+            })
+            .catch(err => {
+                console.error("Gagal memuat data pimpinan:", err);
             });
     }
 
+    // Fungsi Download Excel Berdasarkan Rentang Tanggal Terpisah
     function exportExcelPimpinan() {
         const startDate = document.getElementById('filterStartDate').value;
         const endDate = document.getElementById('filterEndDate').value;
 
         if (!startDate || !endDate) {
-            alert("Pilih rentang tanggal terlebih dahulu!");
+            alert("Pilih rentang tanggal unduh terlebih dahulu!");
             return;
         }
 
