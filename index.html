@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ferlink Absensi Pegawai (FAP)</title>
+    <title>Ferlink Absensi Pegawai (FAP) - Multi Sekolah</title>
     <!-- SheetJS untuk Ekspor Excel -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- Firebase SDK (Compat Version) -->
@@ -44,7 +44,6 @@
 
         .container { max-width: 750px; margin: 20px auto; padding: 0 15px; }
 
-        /* Card & UI Component */
         .card {
             background: white;
             border-radius: 16px;
@@ -105,7 +104,6 @@
         .btn-danger { background: #ef4444; color: white; }
         .btn-outline { background: #f8fafc; color: #475569; border: 1px solid #cbd5e1; }
 
-        /* Login Screen Overlay */
         #authScreen {
             position: fixed;
             inset: 0;
@@ -129,7 +127,6 @@
         .auth-box p { color: #64748b; font-size: 13px; margin-bottom: 20px; }
         #authMessage { margin-top: 10px; font-size: 12px; font-weight: bold; }
 
-        /* Kamera & Selfie Preview */
         .camera-container {
             width: 100%;
             background: #000;
@@ -153,11 +150,9 @@
         .badge-ok { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
         .badge-fail { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
 
-        /* Tab Content Control */
         .app-section { display: none; }
         .app-section.active { display: block; }
 
-        /* Log List */
         .log-item {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
@@ -180,13 +175,18 @@
         <div class="auth-box">
             <div style="font-size: 40px; margin-bottom: 8px;">🏢</div>
             <h2>FERLINK FAP</h2>
-            <p>Sistem Absensi Pegawai & Perusahaan</p>
+            <p>Sistem Absensi Pegawai Multi-Sekolah</p>
+
+            <div class="form-group" style="text-align: left; margin-bottom: 10px;">
+                <label>ID Sekolah / Instansi (Unik):</label>
+                <input type="text" id="regSchoolId" placeholder="Contoh: sman1jakarta">
+            </div>
 
             <div class="form-group" style="text-align: left; margin-bottom: 10px;">
                 <label>Pilih Peran Akun:</label>
                 <select id="roleSelect" onchange="toggleRoleInput()">
                     <option value="pegawai">Pegawai / Karyawan</option>
-                    <option value="pimpinan">Pimpinan / Admin</option>
+                    <option value="pimpinan">Pimpinan / Admin Sekolah</option>
                 </select>
             </div>
 
@@ -195,7 +195,7 @@
                 <input type="text" id="regName" placeholder="Contoh: Budi Santoso">
             </div>
 
-            <input type="email" id="authEmail" placeholder="Email Perusahaan" style="margin-bottom: 10px;">
+            <input type="email" id="authEmail" placeholder="Email Akun" style="margin-bottom: 10px;">
             <input type="password" id="authPassword" placeholder="Password" style="margin-bottom: 15px;">
 
             <button class="btn btn-primary" onclick="loginUser()" style="margin-bottom: 8px;">🔓 Masuk (Login)</button>
@@ -207,7 +207,7 @@
 
     <!-- HEADER UTAMA APLIKASI -->
     <header>
-        <div class="brand-title">🏢 FAP - Ferlink Absensi</div>
+        <div class="brand-title" id="headerBrandTitle">🏢 FAP - Ferlink Absensi</div>
         <div>
             <span id="headerUserRole" style="font-size: 12px; background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 6px; margin-right: 8px;">-</span>
             <button class="btn btn-danger" style="padding: 5px 10px; font-size: 11px;" onclick="logoutUser()">Keluar</button>
@@ -219,7 +219,7 @@
         <!-- ================= PANEL PEGAWAI ================= -->
         <div id="panelPegawai" class="app-section">
             <div class="card">
-                <div class="card-title">📍 Verifikasi Lokasi Kantor (Geofencing)</div>
+                <div class="card-title">📍 Verifikasi Lokasi Kantor/Sekolah (Geofencing)</div>
                 <div id="gpsStatusBox" class="status-badge badge-fail">Mendeteksi posisi GPS Anda...</div>
                 <div style="font-size: 12px; color: #64748b; margin-bottom: 12px;" id="gpsDetailText">Pastikan izin lokasi browser aktif.</div>
                 <button class="btn btn-outline" style="width: 100%; font-size: 12px;" onclick="checkGPSPosition()">🔄 Perbarui Lokasi GPS</button>
@@ -256,20 +256,20 @@
         <!-- ================= PANEL PIMPINAN / ADMIN ================= -->
         <div id="panelPimpinan" class="app-section">
             <div class="card">
-                <div class="card-title">⚙️ Pengaturan Titik Pusat Perusahaan</div>
+                <div class="card-title">⚙️ Pengaturan Titik Pusat Sekolah</div>
                 <div class="form-group">
-                    <label>Latitude Kantor:</label>
+                    <label>Latitude Sekolah:</label>
                     <input type="text" id="cfgLat" placeholder="-6.200000">
                 </div>
                 <div class="form-group">
-                    <label>Longitude Kantor:</label>
+                    <label>Longitude Sekolah:</label>
                     <input type="text" id="cfgLng" placeholder="106.816666">
                 </div>
                 <div class="form-group">
                     <label>Radius Maksimal (Meter):</label>
                     <input type="number" id="cfgRadius" value="100">
                 </div>
-                <button class="btn btn-primary" onclick="saveCompanyConfig()">💾 Simpan Titik Kantor</button>
+                <button class="btn btn-primary" onclick="saveCompanyConfig()">💾 Simpan Titik Sekolah</button>
             </div>
 
             <div class="card">
@@ -322,10 +322,8 @@
     let userCurrentLng = null;
     let isWithinRadius = false;
 
-    // Koordinat Default Kantor (Bisa diubah oleh pimpinan)
     let companySettings = { lat: -6.200000, lng: 106.816666, radius: 100 };
 
-    // Set otomatis tanggal awal (tanggal 1 bulan ini) dan tanggal hari ini
     document.addEventListener("DOMContentLoaded", function() {
         const today = new Date();
         const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -344,14 +342,20 @@
         document.getElementById('pegawaiNameGroup').style.display = (role === 'pegawai') ? 'block' : 'none';
     }
 
-    // Autentikasi: Daftar
+    // Autentikasi: Daftar dengan schoolId
     function registerUser() {
+        const schoolId = document.getElementById('regSchoolId').value.trim().toLowerCase().replace(/\s+/g, '_');
         const email = document.getElementById('authEmail').value.trim();
         const password = document.getElementById('authPassword').value;
         const role = document.getElementById('roleSelect').value;
         const name = document.getElementById('regName').value.trim();
         const msg = document.getElementById('authMessage');
 
+        if (!schoolId) {
+            msg.style.color = '#ef4444';
+            msg.innerText = '❌ ID Sekolah wajib diisi!';
+            return;
+        }
         if (!email || !password) {
             msg.style.color = '#ef4444';
             msg.innerText = '❌ Email dan password wajib diisi!';
@@ -368,6 +372,7 @@
                 const uid = res.user.uid;
                 db.collection("fap_users").doc(uid).set({
                     uid: uid,
+                    schoolId: schoolId,
                     email: email,
                     role: role,
                     name: (role === 'pegawai') ? name : 'Pimpinan / Admin'
@@ -420,9 +425,10 @@
 
     function initAppSession() {
         document.getElementById('headerUserRole').innerText = `${currentUserData.name} (${currentUserData.role.toUpperCase()})`;
+        document.getElementById('headerBrandTitle').innerText = `🏢 FAP - ${currentUserData.schoolId.toUpperCase()}`;
         
-        // Ambil pengaturan perusahaan dari cloud
-        db.collection("fap_config").doc("company").get().then((doc) => {
+        // Ambil konfigurasi spesifik berdasarkan schoolId di koleksi fap_config
+        db.collection("fap_config").doc(currentUserData.schoolId).get().then((doc) => {
             if (doc.exists) {
                 companySettings = doc.data();
             }
@@ -462,17 +468,16 @@
                 userCurrentLat = position.coords.latitude;
                 userCurrentLng = position.coords.longitude;
 
-                // Hitung Jarak dengan Haversine Formula (dalam meter)
                 const distance = calculateDistance(userCurrentLat, userCurrentLng, companySettings.lat, companySettings.lng);
                 
                 if (distance <= companySettings.radius) {
                     isWithinRadius = true;
                     box.className = 'status-badge badge-ok';
-                    box.innerText = `✅ Anda berada di dalam area kantor (${Math.round(distance)} meter dari titik pusat).`;
+                    box.innerText = `✅ Anda berada di dalam area sekolah (${Math.round(distance)} meter dari titik pusat).`;
                 } else {
                     isWithinRadius = false;
                     box.className = 'status-badge badge-fail';
-                    box.innerText = `❌ Anda di luar radius kantor! Jarak Anda ${Math.round(distance)} meter (Maksimal ${companySettings.radius}m).`;
+                    box.innerText = `❌ Anda di luar radius sekolah! Jarak Anda ${Math.round(distance)} meter (Maksimal ${companySettings.radius}m).`;
                 }
                 detail.innerText = `Koordinat Anda: ${userCurrentLat.toFixed(5)}, ${userCurrentLng.toFixed(5)}`;
             },
@@ -485,7 +490,7 @@
     }
 
     function calculateDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371e3; // Radius bumi dalam meter
+        const R = 6371e3;
         const φ1 = lat1 * Math.PI/180;
         const φ2 = lat2 * Math.PI/180;
         const Δφ = (lat2-lat1) * Math.PI/180;
@@ -523,17 +528,16 @@
         document.getElementById('photoPreviewArea').style.display = 'block';
     }
 
-    // --- REKAM ABSENSI (PEGAWAI) ---
+    // --- REKAM ABSENSI (PEGAWAI) DENGAN SCHOOL ID ---
     function recordAttendance(type) {
         const msg = document.getElementById('attendanceMsg');
 
         if (!isWithinRadius) {
             msg.style.color = '#ef4444';
-            msg.innerText = `❌ Absen ditolak! Anda berada di luar radius kantor.`;
+            msg.innerText = `❌ Absen ditolak! Anda berada di luar radius sekolah.`;
             return;
         }
 
-        // Ambil foto selfie otomatis saat absen ditekan
         captureSelfie();
 
         if (!currentSelfieBase64) {
@@ -544,9 +548,10 @@
 
         const todayStr = new Date().toISOString().split('T')[0];
         const timeStr = new Date().toLocaleTimeString();
-        const docId = `${currentUserData.uid}_${todayStr}`;
+        const docId = `${currentUserData.schoolId}_${currentUserData.uid}_${todayStr}`;
 
         const attendanceData = {
+            schoolId: currentUserData.schoolId, // <-- Penting agar terisolasi per sekolah
             uid: currentUserData.uid,
             name: currentUserData.name,
             date: todayStr,
@@ -575,6 +580,7 @@
 
     function loadMyHistory() {
         db.collection("fap_attendance")
+            .where("schoolId", "==", currentUserData.schoolId)
             .where("uid", "==", currentUserData.uid)
             .get()
             .then((querySnapshot) => {
@@ -604,9 +610,10 @@
             radius: parseInt(document.getElementById('cfgRadius').value)
         };
 
-        db.collection("fap_config").doc("company").set(companySettings)
+        // Disimpan menggunakan doc ID berdasarkan schoolId masing-masing sekolah
+        db.collection("fap_config").doc(currentUserData.schoolId).set(companySettings)
             .then(() => {
-                alert("✅ Pengaturan titik pusat perusahaan berhasil disimpan!");
+                alert("✅ Pengaturan titik pusat sekolah berhasil disimpan!");
             });
     }
 
@@ -620,6 +627,7 @@
         }
 
         db.collection("fap_attendance")
+            .where("schoolId", "==", currentUserData.schoolId) // <-- Filter khusus sekolah yang login
             .where("date", ">=", startDate)
             .where("date", "<=", endDate)
             .get()
@@ -656,12 +664,13 @@
         }
 
         db.collection("fap_attendance")
+            .where("schoolId", "==", currentUserData.schoolId)
             .where("date", ">=", startDate)
             .where("date", "<=", endDate)
             .get()
             .then((querySnapshot) => {
                 let rows = [
-                    ["LAPORAN REKAPITULASI ABSENSI PEGAWAI BULANAN"],
+                    [`LAPORAN REKAPITULASI ABSENSI - ${currentUserData.schoolId.toUpperCase()}`],
                     ["Periode", `: ${startDate} s/d ${endDate}`],
                     [],
                     ["No", "Tanggal", "Nama Pegawai", "Jam Masuk", "Jam Pulang", "Koordinat Lokasi GPS"]
@@ -683,7 +692,7 @@
                 const ws = XLSX.utils.aoa_to_sheet(rows);
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, "Rekap Bulanan");
-                XLSX.writeFile(wb, `Rekap_Absensi_${startDate}_hingga_${endDate}.xlsx`);
+                XLSX.writeFile(wb, `Rekap_Absensi_${currentUserData.schoolId}_${startDate}_${endDate}.xlsx`);
             });
     }
 </script>
