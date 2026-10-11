@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FERLINK - Kumpulan Aplikasi & Media Pembelajaran</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        poppins: ['Poppins', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-12px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .card-glow:hover {
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.25),
+                        0 20px 40px -10px rgba(0, 0, 0, 0.3);
+            transform: translateY(-8px) scale(1.02);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-bg {
+            background: radial-gradient(ellipse at top, #1e3a8a 0%, #0f172a 50%, #020617 100%);
+        }
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 8s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-white min-h-screen flex flex-col">
+
+    <!-- Background Decorative Blobs -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="blob w-96 h-96 bg-blue-600 top-[-10%] left-[-10%]"></div>
+        <div class="blob w-80 h-80 bg-purple-600 bottom-[20%] right-[-5%] animation-delay-2000" style="animation-delay: 2s;"></div>
+        <div class="blob w-72 h-72 bg-pink-600 top-[40%] left-[60%] animation-delay-4000" style="animation-delay: 4s;"></div>
+    </div>
+
+    <!-- Header / Navbar -->
+    <header class="relative z-50 sticky top-0">
+        <div class="glass border-b border-white/10">
+            <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-gradient-to-br from-blue-500 to-purple-600 text-white p-2.5 rounded-2xl shadow-lg shadow-blue-500/30">
+                        <i class="fa-solid fa-link text-lg"></i>
+                    </div>
+                    <span class="text-2xl font-bold tracking-wider gradient-text">FERLINK</span>
+                </div>
+                <p class="text-xs sm:text-sm text-slate-400 font-medium hidden sm:block">
+                    Pusat Solusi Aplikasi & Media Digital
+                </p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative z-10 max-w-6xl mx-auto px-4 pt-16 pb-12 text-center">
+        <div class="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 text-xs text-blue-300 mb-6">
+            <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+            Portal Aplikasi Siap Digunakan
+        </div>
+        
+        <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-5 leading-tight">
+            Selamat Datang di<br>
+            <span class="gradient-text">Portal FERLINK</span>
+        </h1>
+        
+        <p class="text-slate-400 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">
+            Silakan pilih berbagai aplikasi dan media interaktif yang bermanfaat untuk kebutuhan Anda. 
+            Cukup klik pada kartu aplikasi yang diinginkan.
+        </p>
+    </section>
+
+    <!-- Main Grid Content -->
+    <main class="relative z-10 max-w-6xl mx-auto px-4 pb-20 flex-grow w-full">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+
+            <!-- Kartu 1: Ferlink Absen -->
+            <div class="group relative bg-slate-900/60 backdrop-blur-xl rounded-3xl p-7 border border-white/10 shadow-xl transition-all duration-500 card-glow flex flex-col justify-between overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                <div class="relative">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 text-white flex items-center justify-center text-2xl mb-5 shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fa-solid fa-clipboard-user"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">Ferlink Absen</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                        Sistem absensi digital interaktif dengan pemindaian QR code, rekap otomatis, dan basis data cloud.
+                    </p>
+                </div>
+                
+                <a href="./absen/" class="relative inline-flex items-center justify-center w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-semibold py-3 px-5 rounded-2xl text-sm transition-all duration-300 shadow-lg shadow-blue-600/20 group-hover:shadow-blue-500/40">
+                    Buka Aplikasi 
+                    <i class="fa-solid fa-arrow-right ml-2 text-xs group-hover:translate-x-1 transition-transform"></i>
+                </a>
+            </div>
+
+            <!-- Kartu 2: Ferlink Kasir -->
+            <div class="group relative bg-slate-900/60 backdrop-blur-xl rounded-3xl p-7 border border-white/10 shadow-xl transition-all duration-500 card-glow flex flex-col justify-between overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-emerald-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                <div class="relative">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-white flex items-center justify-center text-2xl mb-5 shadow-lg shadow-emerald-500/30 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fa-solid fa-cash-register"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">Ferlink Kasir</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                        Aplikasi Point of Sale (POS) sederhana dan cepat untuk pencatatan transaksi penjualan harian usaha Anda.
+                    </p>
+                </div>
+                
+                <a href="./kasir/" class="relative inline-flex items-center justify-center w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-semibold py-3 px-5 rounded-2xl text-sm transition-all duration-300 shadow-lg shadow-emerald-600/20 group-hover:shadow-emerald-500/40">
+                    Buka Aplikasi 
+                    <i class="fa-solid fa-arrow-right ml-2 text-xs group-hover:translate-x-1 transition-transform"></i>
+                </a>
+            </div>
+
+            <!-- Kartu 3: Ferlink Catat Pesan -->
+            <div class="group relative bg-slate-900/60 backdrop-blur-xl rounded-3xl p-7 border border-white/10 shadow-xl transition-all duration-500 card-glow flex flex-col justify-between overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-amber-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                <div class="relative">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-700 text-white flex items-center justify-center text-2xl mb-5 shadow-lg shadow-amber-500/30 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fa-solid fa-note-sticky"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">Ferlink Catat Pesan</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                        Solusi praktis untuk mencatat dan mengelola pesan masuk, catatan penting, atau pengingat pelanggan.
+                    </p>
+                </div>
+                
+                <a href="./catat-pesan/" class="relative inline-flex items-center justify-center w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-semibold py-3 px-5 rounded-2xl text-sm transition-all duration-300 shadow-lg shadow-amber-600/20 group-hover:shadow-amber-500/40">
+                    Buka Aplikasi 
+                    <i class="fa-solid fa-arrow-right ml-2 text-xs group-hover:translate-x-1 transition-transform"></i>
+                </a>
+            </div>
+
+            <!-- Kartu 4: Media Pembelajaran -->
+            <div class="group relative bg-slate-900/60 backdrop-blur-xl rounded-3xl p-7 border border-white/10 shadow-xl transition-all duration-500 card-glow flex flex-col justify-between overflow-hidden sm:col-span-2 lg:col-span-1">
+                <div class="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                <div class="relative">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-700 text-white flex items-center justify-center text-2xl mb-5 shadow-lg shadow-purple-500/30 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">Media Pembelajaran</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                        Kumpulan media belajar interaktif berbasis web untuk mendukung kegiatan edukasi di kelas maupun mandiri.
+                    </p>
+                </div>
+                
+                <a href="./media/" class="relative inline-flex items-center justify-center w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-semibold py-3 px-5 rounded-2xl text-sm transition-all duration-300 shadow-lg shadow-purple-600/20 group-hover:shadow-purple-500/40">
+                    Buka Aplikasi 
+                    <i class="fa-solid fa-arrow-right ml-2 text-xs group-hover:translate-x-1 transition-transform"></i>
+                </a>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10 border-t border-white/10 py-8">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <div class="flex items-center justify-center gap-2 mb-3">
+                <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-link"></i>
+                </div>
+                <span class="font-bold text-lg gradient-text">FERLINK</span>
+            </div>
+            <p class="text-slate-500 text-sm">
+                &copy; 2026 <strong class="text-slate-300">FERLINK</strong>. Hak Cipta Dilindungi. Dikembangkan dengan penuh semangat.
+            </p>
+        </div>
+    </footer>
+
+</body>
+</html>
